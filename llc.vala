@@ -1,3 +1,5 @@
+#! /usr/bin/env -S vala --pkg gtk4
+
 // llc.vala
 // Compile with:
 // valac --pkg gtk4 llc.vala
