@@ -18,6 +18,7 @@ class LanternLinkCoveApp : Gtk.Application {
   const uint8 MAX_QUESTIONS = 15;
 
   private Label question_label;
+  private Label section_label;
   private int questions_clicked = 0;
 
   protected override void activate () {
@@ -37,7 +38,11 @@ class LanternLinkCoveApp : Gtk.Application {
     center_box.valign = Align.CENTER;
     vbox.append (center_box);
 
-    question_label = new Label ("Level 1");
+    section_label = new Label ("");
+    section_label.set_name ("section");
+    center_box.append (section_label);
+
+    question_label = new Label ("There are two ways to play this game:\n\n1. safely\n2. to grow\n\nThink about which one you want as you stare deeply into each other's eyes like you mean it--seriously, don't chicken out. The first to giggle plays first.");
     question_label.set_name ("question");
     question_label.wrap = true;
     question_label.justify = Justification.CENTER;
@@ -52,8 +57,11 @@ class LanternLinkCoveApp : Gtk.Application {
     var button_a = new Button.with_label ("Level 1");
     var button_b = new Button.with_label ("Level 2");
     var button_c = new Button.with_label ("Level 3");
+    var button_d = new Button.with_label ("Final Card");
+    button_d.sensitive = false; // only for later
 
     button_a.clicked.connect (() => {
+
       questions_clicked += 1;
       if (questions_clicked >= MAX_QUESTIONS) {
         button_a.sensitive = false;
@@ -61,7 +69,8 @@ class LanternLinkCoveApp : Gtk.Application {
         questions_clicked = 0;
       }
 
-      this.run_fortune_async ("magic");
+      section_label.set_text ("Warm up");
+      this.run_fortune_async ("content/level1"); // TODO: move this somewhere findable like /usr
     });
 
     button_b.clicked.connect (() => {
@@ -78,7 +87,8 @@ class LanternLinkCoveApp : Gtk.Application {
         questions_clicked = 0;
       }
 
-      this.run_fortune_async ("love");
+      section_label.set_text ("Connection");
+      this.run_fortune_async ("content/level2"); // TODO: move this somewhere findable like /usr
     });
 
     button_c.clicked.connect (() => {
@@ -98,19 +108,44 @@ class LanternLinkCoveApp : Gtk.Application {
         button_c.sensitive = false;
         button_c.set_label ("[done]");
         questions_clicked = 0;
+
+        if (button_a.get_label () == "[done]" && button_b.get_label () == "[done]" && button_c.get_label () == "[done]") {
+          button_d.sensitive = true;
+        }
       }
 
-      this.run_fortune_async ("goedel");
+      section_label.set_text ("Reflection");
+      this.run_fortune_async ("content/level3"); // TODO: move this somewhere findable like /usr
+    });
+
+    button_d.clicked.connect (() => {
+
+      questions_clicked += 1;
+      if (questions_clicked >= 1) {
+        button_d.sensitive = false;
+        button_d.set_label ("[done]");
+        questions_clicked = 0;
+      }
+
+      section_label.set_text ("Final Card");
+      this.run_fortune_async ("content/final"); // TODO: move this somewhere findable like /usr
     });
 
     button_box.append (button_a);
     button_box.append (button_b);
     button_box.append (button_c);
+    button_box.append (button_d);
 
     vbox.append (button_box);
 
     var css = new CssProvider ();
     css.load_from_string ("""
+label#section {
+  padding: 1em;
+  font-size: 18pt;
+  text-decoration: underline;
+  text-decoration-style: dashed;
+}
 label#question {
     padding: 2em;
     font-size: 26pt;

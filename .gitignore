@@ -1,1 +1,4 @@
 ./llc
+
+# fortune-mod binary index files
+*.dat
