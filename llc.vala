@@ -20,7 +20,7 @@ class LanternLinkCoveApp : Gtk.Application {
   protected override void activate () {
     var window = new ApplicationWindow (this);
     window.title = "Lantern Link Cove";
-    window.set_default_size (600, 400);
+    window.set_default_size (800, 400);
 
     // Main vertical layout
     var vbox = new Box (Orientation.VERTICAL, 0);
@@ -77,9 +77,10 @@ class LanternLinkCoveApp : Gtk.Application {
     var css = new CssProvider ();
     css.load_from_string ("""
 label#question {
-    font-size: 26pt;
-    vertical-align: middle;
     padding: 2em;
+    font-size: 26pt;
+    /* vertical-align: middle; */
+    /* height: 800px; */
 }
 """);
 
@@ -107,7 +108,7 @@ label#question {
       try {
         var argv = new Array<string> ();
         argv.append_val ("fortune");
-        argv.append_val ("-s");
+        // argv.append_val ("-s");
         foreach (var s in _sources) {
           argv.append_val (s);
         }
@@ -125,6 +126,13 @@ label#question {
         if (exit_status != 0) {
           throw new ShellError.FAILED (err);
         }
+
+        // undo word wrap
+        // fortune files all(?) have `fold -w 80` run over them.
+        // this undoes that by replacing newlines with " " if they're surrounded
+        // by non-whitespace. Ish. It's a bit trickier than that.
+        var regex = new Regex (@"(?<!\n)\n(?=[^ \t\n\r\f\v])");
+        fortune = regex.replace (fortune, fortune.length, 0, " ");
 
         Idle.add (() => {
           question_label.set_text (fortune ? .strip ());
