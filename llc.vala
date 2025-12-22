@@ -15,7 +15,10 @@ class LanternLinkCoveApp : Gtk.Application {
     );
   }
 
+  const uint8 MAX_QUESTIONS = 15;
+
   private Label question_label;
+  private int questions_clicked = 0;
 
   protected override void activate () {
     var window = new ApplicationWindow (this);
@@ -51,20 +54,52 @@ class LanternLinkCoveApp : Gtk.Application {
     var button_c = new Button.with_label ("Level 3");
 
     button_a.clicked.connect (() => {
-      stdout.printf ("A\n");
+      questions_clicked += 1;
+      if (questions_clicked >= MAX_QUESTIONS) {
+        button_a.sensitive = false;
+        button_a.set_label ("[done]");
+        questions_clicked = 0;
+      }
+
       this.run_fortune_async ("magic");
     });
 
     button_b.clicked.connect (() => {
-      stdout.printf ("B\n");
-      button_a.sensitive = false;
+      if (button_a.sensitive) {
+        button_a.sensitive = false;
+        button_a.set_label ("[skipped]");
+        questions_clicked = 0;
+      }
+
+      questions_clicked += 1;
+      if (questions_clicked >= MAX_QUESTIONS) {
+        button_b.sensitive = false;
+        button_b.set_label ("[done]");
+        questions_clicked = 0;
+      }
+
       this.run_fortune_async ("love");
     });
 
     button_c.clicked.connect (() => {
-      stdout.printf ("C\n");
-      button_a.sensitive = false;
-      button_b.sensitive = false;
+      if (button_a.sensitive) {
+        button_a.sensitive = false;
+        button_a.set_label ("[skipped]");
+        questions_clicked = 0;
+      }
+      if (button_b.sensitive) {
+        button_b.sensitive = false;
+        button_b.set_label ("[skipped]");
+        questions_clicked = 0;
+      }
+
+      questions_clicked += 1;
+      if (questions_clicked >= MAX_QUESTIONS) {
+        button_c.sensitive = false;
+        button_c.set_label ("[done]");
+        questions_clicked = 0;
+      }
+
       this.run_fortune_async ("goedel");
     });
 
