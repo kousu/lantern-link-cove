@@ -74,8 +74,8 @@ class LanternLinkCoveApp : Gtk.Application {
         questions_clicked = 0;
       }
 
-      section_label.set_text ("Warm up");
-      this.run_fortune_async ("resource:///content/level1");
+      section_label.set_text ("Perception");
+      this.run_fortune_async ("resource:///content/wnrs/level1");
     });
 
     button_b.clicked.connect (() => {
@@ -93,7 +93,7 @@ class LanternLinkCoveApp : Gtk.Application {
       }
 
       section_label.set_text ("Connection");
-      this.run_fortune_async ("resource:///content/level2");
+      this.run_fortune_async ("resource:///content/wnrs/level2");
     });
 
     button_c.clicked.connect (() => {
@@ -121,7 +121,7 @@ class LanternLinkCoveApp : Gtk.Application {
       }
 
       section_label.set_text ("Reflection");
-      this.run_fortune_async ("resource:///content/level3");
+      this.run_fortune_async ("resource:///content/wnrs/level3");
     });
 
     button_d.clicked.connect (() => {
@@ -134,7 +134,7 @@ class LanternLinkCoveApp : Gtk.Application {
       }
 
       section_label.set_text ("Final Card");
-      this.run_fortune_async ("resource:///content/final");
+      this.run_fortune_async ("resource:///content/wnrs/final");
     });
 
     button_box.append (button_a);
