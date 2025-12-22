@@ -16,6 +16,8 @@ class LanternLinkCoveApp : Gtk.Application {
   }
 
   private Label question_label;
+  private TextView question_view;
+
 
   protected override void activate () {
     var window = new ApplicationWindow (this);
@@ -34,13 +36,46 @@ class LanternLinkCoveApp : Gtk.Application {
     center_box.valign = Align.CENTER;
 
     // Empty text widget (label) with 26pt font
-    question_label = new Label ("Slots");
-    question_label.set_name ("question");
+    question_label = new Label ("Level 1");
+    question_label.set_name ("questioni");
     // var font_desc = Pango.FontDescription.from_string ("Sans 26");
     // label.override_font (font_desc);
 
     center_box.append (question_label);
+
+    // Create a TextView
+    question_view = new TextView ();
+    question_view.set_name ("question");
+    question_view.wrap_mode = WrapMode.WORD;
+    question_view.editable = false;
+    question_view.cursor_visible = false;
+
+    // remove border/padding
+    question_view.set_left_margin (6);
+    question_view.set_right_margin (6);
+    question_view.set_top_margin (6);
+    question_view.set_bottom_margin (6);
+
+    // Put it inside a ScrolledWindow
+    var scroller = new ScrolledWindow ();
+    scroller.set_size_request (500, 300);
+    scroller.set_policy (PolicyType.AUTOMATIC, PolicyType.AUTOMATIC);
+    scroller.hexpand = true;
+    scroller.vexpand = true;
+    scroller.halign = Align.FILL;
+    scroller.valign = Align.CENTER;
+    scroller.set_child (question_view);
+
+
+    // Center it in the window layout
+    center_box.hexpand = true;
+    center_box.vexpand = true;
+    center_box.halign = Align.FILL;
+    center_box.valign = Align.FILL;
+    center_box.append (scroller);
+
     vbox.append (center_box);
+
 
     // Bottom button bar
     var button_box = new Box (Orientation.HORIZONTAL, 12);
@@ -54,18 +89,26 @@ class LanternLinkCoveApp : Gtk.Application {
 
     button_a.clicked.connect (() => {
       stdout.printf ("A\n");
-      this.run_fortune_async ();
+      question_label.set_text ("Level 1");
+      question_view.get_buffer ().set_text ("");
+      this.run_fortune_async ("magic");
     });
 
     button_b.clicked.connect (() => {
       stdout.printf ("B\n");
       button_a.sensitive = false;
+      question_label.set_text ("Level 2");
+      question_view.get_buffer ().set_text ("");
+      this.run_fortune_async ("love");
     });
 
     button_c.clicked.connect (() => {
       stdout.printf ("C\n");
       button_a.sensitive = false;
       button_b.sensitive = false;
+      question_label.set_text ("Level 3");
+      question_view.get_buffer ().set_text ("");
+      this.run_fortune_async ("goedel");
     });
 
     button_box.append (button_a);
@@ -77,7 +120,11 @@ class LanternLinkCoveApp : Gtk.Application {
     // CSS for 26pt centered label
     var css = new CssProvider ();
     css.load_from_string ("""
-label#question {
+#question {
+    font-size: 26pt;
+    vertical-align: middle;
+}
+label#questioni {
     font-size: 26pt;
 }
 """);
@@ -92,19 +139,27 @@ label#question {
   }
 
   private Thread? fortune_thread;
-  private void run_fortune_async () {
+  private void run_fortune_async (params string[] sources) {
     if (fortune_thread != null) {
       stdout.printf ("Fortune is already running\n");
       return;
     }
+
+    var _sources = sources; // for the benefit of the closure
     fortune_thread = new Thread<void> ("run_fortune_async", () => {
       string fortune, err;
       int exit_status;
 
       try {
+        var argv = new Array<string> ();
+        argv.append_val ("fortune");
+        argv.append_val ("-s");
+        foreach (var s in _sources) {
+          argv.append_val (s);
+        }
         Process.spawn_sync (
                             null,
-                            { "fortune", "-s" },
+                            argv.data,
                             null,
                             SpawnFlags.SEARCH_PATH,
                             null,
@@ -118,9 +173,7 @@ label#question {
         }
 
         Idle.add (() => {
-          if (fortune != null) {
-            question_label.set_text (fortune ? .strip ());
-          }
+          question_view.get_buffer ().set_text (fortune ? .strip ());
           return false;
         });
         stdout.printf ("Fortune done\n");
