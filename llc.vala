@@ -15,6 +15,8 @@ class LanternLinkCoveApp : Gtk.Application {
     );
   }
 
+  private Label question_label;
+
   protected override void activate () {
     var window = new ApplicationWindow (this);
     window.title = "Lantern Link Cove";
@@ -32,12 +34,12 @@ class LanternLinkCoveApp : Gtk.Application {
     center_box.valign = Align.CENTER;
 
     // Empty text widget (label) with 26pt font
-    var label = new Label ("Slots");
-    label.set_name("question");
+    question_label = new Label ("Slots");
+    question_label.set_name ("question");
     // var font_desc = Pango.FontDescription.from_string ("Sans 26");
     // label.override_font (font_desc);
 
-    center_box.append (label);
+    center_box.append (question_label);
     vbox.append (center_box);
 
     // Bottom button bar
@@ -52,6 +54,7 @@ class LanternLinkCoveApp : Gtk.Application {
 
     button_a.clicked.connect (() => {
       stdout.printf ("A\n");
+      this.run_fortune_async ();
     });
 
     button_b.clicked.connect (() => {
@@ -86,6 +89,47 @@ label#question {
     );
 
     window.present ();
+  }
+
+  private Thread? fortune_thread;
+  private void run_fortune_async () {
+    if (fortune_thread != null) {
+      stdout.printf ("Fortune is already running\n");
+      return;
+    }
+    fortune_thread = new Thread<void> ("run_fortune_async", () => {
+      string fortune, err;
+      int exit_status;
+
+      try {
+        Process.spawn_sync (
+                            null,
+                            { "fortune", "-s" },
+                            null,
+                            SpawnFlags.SEARCH_PATH,
+                            null,
+                            out fortune,
+                            out err,
+                            out exit_status
+        );
+
+        if (exit_status != 0) {
+          throw new ShellError.FAILED (err);
+        }
+
+        Idle.add (() => {
+          if (fortune != null) {
+            question_label.set_text (fortune ? .strip ());
+          }
+          return false;
+        });
+        stdout.printf ("Fortune done\n");
+      } catch (Error e) {
+        string msg = e.message;
+        stderr.printf ("Error: %s\n", e.message);
+      }
+      fortune_thread = null;
+    });
   }
 }
 
