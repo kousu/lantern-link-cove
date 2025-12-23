@@ -60,7 +60,7 @@ class LanternLinkCoveApp : Gtk.Application {
     var button_b = new Button.with_label ("Level 2");
     var button_c = new Button.with_label ("Level 3");
     var button_d = new Button.with_label ("Final Card");
-    button_d.sensitive = false; // only for later
+    button_d.visible = false; // only for later
 
     button_a.clicked.connect (() => {
 
@@ -112,7 +112,8 @@ class LanternLinkCoveApp : Gtk.Application {
         questions_clicked = 0;
 
         if (button_a.get_label () == "[done]" && button_b.get_label () == "[done]" && button_c.get_label () == "[done]") {
-          button_d.sensitive = true;
+          button_a.visible = button_b.visible = button_c.visible = false;
+          button_d.visible = true;
         }
       }
 
