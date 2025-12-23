@@ -22,6 +22,9 @@ class LanternLinkCoveApp : Gtk.Application {
   private int questions_clicked = 0;
 
   protected override void activate () {
+
+    fortunes = new HashTable<string, FortuneDB> (str_hash, str_equal);
+
     var window = new ApplicationWindow (this);
     window.title = "Lantern Link Cove";
     window.set_default_size (800, 400);
@@ -163,6 +166,15 @@ label#question {
     window.present ();
   }
 
+  private HashTable<string, FortuneDB> fortunes;
+  private FortuneDB get_fortunedb (string source) throws Error {
+    if (!fortunes.contains (source)) {
+      fortunes.insert (source, new FortuneDB ({ source }));
+    }
+
+    return fortunes.get (source);
+  }
+
   private Thread? fortune_thread;
   private void run_fortune_async (params string[] sources) {
     if (fortune_thread != null) {
@@ -173,7 +185,7 @@ label#question {
     var _sources = sources; // for the benefit of the closure
     fortune_thread = new Thread<void> ("run_fortune_async", () => {
       try {
-        var fortunedb = new FortuneDB (_sources);
+        var fortunedb = get_fortunedb (_sources[0]);
         var fortune = fortunedb.random_fortune ();
         // stderr.printf ("picked: |%s|\n", fortune);
 
