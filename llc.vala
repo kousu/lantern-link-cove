@@ -172,30 +172,10 @@ label#question {
 
     var _sources = sources; // for the benefit of the closure
     fortune_thread = new Thread<void> ("run_fortune_async", () => {
-      string fortune, err;
-      int exit_status;
-
       try {
-        var argv = new Array<string> ();
-        argv.append_val ("fortune");
-        // argv.append_val ("-s");
-        foreach (var s in _sources) {
-          argv.append_val (s);
-        }
-        Process.spawn_sync (
-                            null,
-                            argv.data,
-                            null,
-                            SpawnFlags.SEARCH_PATH,
-                            null,
-                            out fortune,
-                            out err,
-                            out exit_status
-        );
-
-        if (exit_status != 0) {
-          throw new ShellError.FAILED (err);
-        }
+        var fortunedb = new FortuneDB (_sources);
+        var fortune = fortunedb.random_fortune ();
+        // stderr.printf ("picked: |%s|\n", fortune);
 
         // undo word wrap
         // fortune files all(?) have `fold -w 80` run over them.
@@ -216,6 +196,105 @@ label#question {
     });
   }
 }
+
+errordomain FortuneError {
+  ARGUMENT_ERROR
+}
+
+public class FortuneDB {
+  File text_file;
+  uint32 version;
+  uint32 numstr;
+  uint32 longest;
+  uint32 shortest;
+  uint32 flags;
+  uint8 delim;
+  uint32[] offsets;
+
+  private Rand rng;
+
+  public FortuneDB (string[] paths) throws Error {
+    if (paths.length != 1) {
+      // TODO: support multiple sources the way fortune(1) does, with equal weight
+      throw new FortuneError.ARGUMENT_ERROR ("FortuneDB only supports parsing one source at a time");
+    }
+    text_file = File.new_for_path (paths[0]);
+    load_index (paths[0] + ".dat");
+
+    rng = new Rand ();
+  }
+
+  private void load_index (string dat_path) throws Error {
+    var f = File.new_for_path (dat_path);
+    var dis = new DataInputStream (f.read ());
+
+    // .dat uses big-endian integers
+    dis.set_byte_order (DataStreamByteOrder.BIG_ENDIAN);
+
+    // https://man.archlinux.org/man/strfile.1.en#Header
+    // #define VERSION 1
+    // unsigned long str_version; /* version number */
+    // unsigned long str_numstr; /* # of strings in the file */
+    // unsigned long str_longlen; /* length of longest string */
+    // unsigned long str_shortlen; /* shortest string length */
+    // #define STR_RANDOM 0x1 /* randomized pointers */
+    // #define STR_ORDERED 0x2 /* ordered pointers */
+    // #define STR_ROTATED 0x4 /* rot-13'd text */
+    // unsigned long str_flags; /* bit field for flags */
+    // char str_delim; /* delimiting character */
+    version = dis.read_uint32 ();
+    numstr = dis.read_uint32 ();
+    longest = dis.read_uint32 ();
+    shortest = dis.read_uint32 ();
+    flags = dis.read_uint32 ();
+    delim = dis.read_byte ();
+    dis.read_byte (); // throwaway padding bytes
+    dis.read_byte ();
+    dis.read_byte ();
+    // stderr.printf ("header:\nversion: %u\nnumstr: %u\nlonglen: %u\nshortlen: %u\nflag: %xu\ndelim: %c\n", version, numstr, longest, shortest, flags, delim);
+
+    offsets = new uint32[numstr];
+    for (uint i = 0; i < numstr; i++) {
+      offsets[i] = dis.read_uint32 ();
+      // stderr.printf ("%u\n", offsets[i]);
+    }
+  }
+
+  public string random_fortune () throws Error {
+    if (offsets.length == 0)
+      return "";
+
+    uint i = rng.int_range (0, offsets.length);
+
+    uint32 start = offsets[i];
+    uint32 end = (i + 1 < offsets.length)
+            ? offsets[i + 1]
+            : (uint32) text_file.query_info (
+                                             FileAttribute.STANDARD_SIZE,
+                                             FileQueryInfoFlags.NONE
+            ).get_size ();
+
+    end -= 3; // strip trailing '\n%\n'; fortunes are delimited by a % on a line by itself.
+    uint32 len = end - start;
+
+    // stderr.printf ("chose %u/%d, db[%u:%u+%u]\n", i, offsets.length, start, start, len);
+
+    var istream = text_file.read ();
+    istream.skip (start);
+
+    uint8[] buf = new uint8[len + 1]; // overallocated to allow for null termination
+                                      // unfortunately
+    size_t read;
+    istream.read_all (buf, out read);
+    // stderr.printf ("we actually read: %lu\n", read);
+    buf[read - 1] = 0; // null terminate
+    // buf[len] = 0; // or should we do this?
+
+    string fortune = (string) buf;
+    return fortune;
+  }
+}
+
 
 int main (string[] args) {
   var app = new LanternLinkCoveApp ();
