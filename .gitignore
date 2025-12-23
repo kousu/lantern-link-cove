@@ -4,3 +4,4 @@
 *.dat
 
 .app.gresource.c
+.ui.gresource.c

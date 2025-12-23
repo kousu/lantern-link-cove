@@ -1,0 +1,5 @@
+<gresources>
+  <gresource prefix="/ca/kousu/lanternlinkcove">
+    <file>style.css</file>
+  </gresource>
+</gresources>
