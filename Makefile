@@ -1,6 +1,6 @@
 
 llc: llc.vala .app.gresource.c
-	valac --pkg gtk4 $^
+	valac --pkg gtk4 --pkg gee-0.8 $^
 
 .PHONY: play
 play: llc

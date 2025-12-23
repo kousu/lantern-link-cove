@@ -2,6 +2,7 @@
 //
 // See Makefile for build instructions.
 
+using Gee;
 using Gtk;
 using GLib;
 
@@ -222,6 +223,7 @@ public class FortuneDB {
   uint32[] offsets;
 
   private Rand rng;
+  private HashSet<uint> seen;
 
   public FortuneDB (string[] paths) throws Error {
     if (paths.length != 1) {
@@ -231,6 +233,7 @@ public class FortuneDB {
     text_file = File.new_for_uri (paths[0]);
     load_index (paths[0] + ".dat");
     rng = new Rand ();
+    seen = new HashSet<uint> ();
   }
 
   private void load_index (string dat_path) throws Error {
@@ -273,7 +276,20 @@ public class FortuneDB {
     if (offsets.length == 0)
       return "";
 
-    uint i = rng.int_range (0, offsets.length);
+    if (seen.size >= offsets.length) {
+      // reset when we overflow
+      seen = new HashSet<uint> ();
+      stderr.printf ("resetting seen\n");
+    }
+    uint i;
+    while (seen.contains (i = rng.int_range (0, offsets.length))) {
+      // XXX this risks an infinite loop; maybe there's a safer way, like by
+      // calling int_range(0, offsets.length - seen.size) once, and instead
+      // looping through an array of crossed off items (only counting the uncrossed items).
+
+      // stderr.printf ("skipping fortune %u because we've used it already\n", i);
+    }
+    seen.add (i);
 
     uint32 start = offsets[i];
     uint32 end = (i + 1 < offsets.length)
@@ -286,7 +302,7 @@ public class FortuneDB {
     end -= 3; // strip trailing '\n%\n'; fortunes are delimited by a % on a line by itself.
     uint32 len = end - start;
 
-    // stderr.printf ("chose %u/%d, db[%u:%u+%u]\n", i, offsets.length, start, start, len);
+    // stderr.printf ("chose %u/%d [seen: %u] @ db[%u:%u+%u]\n", i, offsets.length, seen.size, start, start, len);
 
     var istream = text_file.read ();
     istream.skip (start);
