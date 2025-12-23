@@ -14,13 +14,11 @@ To build, run
 make
 ```
 
-But, during testing, it's faster to simply
+There's a shortcut for testing:
 
 ```
-./llc.vala
+make play
 ```
-
-because vala slips in and does a quick compilation for you.
 
 ## Related
 

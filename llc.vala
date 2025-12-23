@@ -1,8 +1,6 @@
-#! /usr/bin/env -S vala --pkg gtk4
-
 // llc.vala
-// Compile with:
-// valac --pkg gtk4 llc.vala
+//
+// See Makefile for build instructions.
 
 using Gtk;
 using GLib;
@@ -73,7 +71,7 @@ class LanternLinkCoveApp : Gtk.Application {
       }
 
       section_label.set_text ("Warm up");
-      this.run_fortune_async ("content/level1"); // TODO: move this somewhere findable like /usr
+      this.run_fortune_async ("resource:///content/level1");
     });
 
     button_b.clicked.connect (() => {
@@ -91,7 +89,7 @@ class LanternLinkCoveApp : Gtk.Application {
       }
 
       section_label.set_text ("Connection");
-      this.run_fortune_async ("content/level2"); // TODO: move this somewhere findable like /usr
+      this.run_fortune_async ("resource:///content/level2");
     });
 
     button_c.clicked.connect (() => {
@@ -118,7 +116,7 @@ class LanternLinkCoveApp : Gtk.Application {
       }
 
       section_label.set_text ("Reflection");
-      this.run_fortune_async ("content/level3"); // TODO: move this somewhere findable like /usr
+      this.run_fortune_async ("resource:///content/level3");
     });
 
     button_d.clicked.connect (() => {
@@ -131,7 +129,7 @@ class LanternLinkCoveApp : Gtk.Application {
       }
 
       section_label.set_text ("Final Card");
-      this.run_fortune_async ("content/final"); // TODO: move this somewhere findable like /usr
+      this.run_fortune_async ("resource:///content/final");
     });
 
     button_box.append (button_a);
@@ -230,14 +228,13 @@ public class FortuneDB {
       // TODO: support multiple sources the way fortune(1) does, with equal weight
       throw new FortuneError.ARGUMENT_ERROR ("FortuneDB only supports parsing one source at a time");
     }
-    text_file = File.new_for_path (paths[0]);
+    text_file = File.new_for_uri (paths[0]);
     load_index (paths[0] + ".dat");
-
     rng = new Rand ();
   }
 
   private void load_index (string dat_path) throws Error {
-    var f = File.new_for_path (dat_path);
+    var f = File.new_for_uri (dat_path);
     var dis = new DataInputStream (f.read ());
 
     // .dat uses big-endian integers

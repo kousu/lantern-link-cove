@@ -2,3 +2,5 @@
 
 # fortune-mod binary index files
 *.dat
+
+.app.gresource.c

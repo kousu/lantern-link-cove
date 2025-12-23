@@ -1,0 +1,12 @@
+<gresources>
+  <gresource prefix="/content">
+    <file>level1</file>
+    <file>level1.dat</file>
+    <file>level2</file>
+    <file>level2.dat</file>
+    <file>level3</file>
+    <file>level3.dat</file>
+    <file>final</file>
+    <file>final.dat</file>
+  </gresource>
+</gresources>
