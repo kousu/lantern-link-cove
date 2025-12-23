@@ -7,6 +7,163 @@ using Gtk;
 using GLib;
 
 class LanternLinkCoveApp : Gtk.Application {
+
+  const string STYLESHEET = """
+@keyframes bg-circular-orbit {
+   /* requires background-size: 300% 300% to work properly
+    https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/background-position#regarding_percentages
+      (container width - image width) * (position x%) = (x offset value)
+      (container height - image height) * (position y%) = (y offset value)
+  */
+    0% { background-position: 83% 50%;
+
+    background-image: linear-gradient(
+        0deg,
+        /* autumn */
+        #590d22,
+        #800f2f,
+        #d62828,
+        #f77f00,
+        #fcbf49
+    );
+
+     }
+   12.5% { background-position: 73.3% 73.3%;
+    background-image: linear-gradient(
+        90deg,
+        /* autumn */
+        #590d22,
+        #800f2f,
+        #d62828,
+        #f77f00,
+        #fcbf49
+    );
+  }
+   25% { background-position: 50% 83%;
+    background-image: linear-gradient(
+        180deg,
+        /* autumn */
+        #590d22,
+        #800f2f,
+        #d62828,
+        #f77f00,
+        #fcbf49
+    );
+  }
+   37.5% { background-position: 26.7% 73.3%;
+    background-image: linear-gradient(
+        270deg,
+        /* autumn */
+        #590d22,
+        #800f2f,
+        #d62828,
+        #f77f00,
+        #fcbf49
+    );
+  }
+   50% { background-position: 17% 50%;
+
+    background-image: linear-gradient(
+        180deg,
+        /* autumn */
+        #590d22,
+        #800f2f,
+        #d62828,
+        #f77f00,
+        #fcbf49
+    );
+   }
+   62.5% { background-position: 26.7% 26.7%;
+
+    background-image: linear-gradient(
+        270deg,
+        /* autumn */
+        #590d22,
+        #800f2f,
+        #d62828,
+        #f77f00,
+        #fcbf49
+    );
+   }
+   75% { background-position: 50% 17%;
+    background-image: linear-gradient(
+        180deg,
+        /* autumn */
+        #590d22,
+        #800f2f,
+        #d62828,
+        #f77f00,
+        #fcbf49
+    );
+   }
+   87.5% { background-position: 73.3% 26.7%;
+    background-image: linear-gradient(
+        90deg,
+        /* autumn */
+        #590d22,
+        #800f2f,
+        #d62828,
+        #f77f00,
+        #fcbf49
+    );
+   }
+  /* slightly before 100% to avoid a pause on the final frame */
+  99.999% { background-position: 83% 50%;
+    background-image: linear-gradient(
+        0deg,
+        /* autumn */
+        #590d22,
+        #800f2f,
+        #d62828,
+        #f77f00,
+        #fcbf49
+    );
+   }
+}
+
+.wave-bg {
+    background-size: 300% 300%;
+    background-image: linear-gradient(
+        0deg,
+        /* autumn */
+        #590d22,
+        #800f2f,
+        #d62828,
+        #f77f00,
+        #fcbf49
+    );
+
+    background-repeat: no-repeat;
+
+    animation-name: bg-circular-orbit;
+    animation-duration: 20s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+
+.wave-bg label#section {
+    color: #001d3d;
+}
+
+.wave-bg label#question {
+    color: #001d3d;
+    text-shadow: .12em .07em .08em rgba(100, 10, 80, 0.8);
+}
+
+label#section {
+  padding: 1em;
+  font-size: 18pt;
+  text-decoration: underline;
+  text-decoration-style: dashed;
+}
+label#question {
+    padding: 2em;
+    font-size: 26pt;
+    /* vertical-align: middle; */
+    /* height: 800px; */
+}
+""";
+
   public LanternLinkCoveApp () {
     Object (
             application_id: "ca.kousu.lanternlinkcove",
@@ -30,10 +187,12 @@ class LanternLinkCoveApp : Gtk.Application {
 
     // Main vertical layout
     var vbox = new Box (Orientation.VERTICAL, 0);
+    vbox.add_css_class ("wave-bg");
     window.set_child (vbox);
 
     // Center area
     var center_box = new Box (Orientation.VERTICAL, 0);
+    // center_box.add_css_class ("wave-bg"); // debug
     center_box.hexpand = true;
     center_box.vexpand = true;
     center_box.halign = Align.CENTER;
@@ -142,20 +301,7 @@ class LanternLinkCoveApp : Gtk.Application {
     vbox.append (button_box);
 
     var css = new CssProvider ();
-    css.load_from_string ("""
-label#section {
-  padding: 1em;
-  font-size: 18pt;
-  text-decoration: underline;
-  text-decoration-style: dashed;
-}
-label#question {
-    padding: 2em;
-    font-size: 26pt;
-    /* vertical-align: middle; */
-    /* height: 800px; */
-}
-""");
+    css.load_from_string (STYLESHEET);
 
     Gtk.StyleContext.add_provider_for_display (
                                                Gdk.Display.get_default (),
