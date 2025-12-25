@@ -186,7 +186,7 @@ class LanternLinkCoveApp : Gtk.Application {
         var regex = new Regex (@"(?<!\n)\n(?=[^ \t\n\r\f\v])");
         fortune = regex.replace (fortune, fortune.length, 0, " ");
 
-        Idle.add (() => {
+        MainContext.default ().invoke (() => {
           question_label.set_text (fortune ? .strip ());
           return false;
         });
