@@ -1,6 +1,13 @@
+LDFLAGS :=
+ifeq ($(OS),Windows_NT)
+  # build a GUI app, not a console app
+  LDFLAGS += -mwindows
+endif
+
+ALL_LDFLAGS := $(foreach f,$(LDFLAGS),-X $(f))
 
 llc: llc.vala .app.gresource.c .ui.gresource.c
-	valac --pkg gtk4 --pkg gee-0.8 $^
+	valac --pkg gtk4 --pkg gee-0.8 $(ALL_LDFLAGS) $^
 
 .PHONY: play
 play: llc
