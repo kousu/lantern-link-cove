@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+ "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleName</key>
+    <string>lantern-link-cove</string>
+
+    <key>CFBundleDisplayName</key>
+    <string>We're Not Really Strangers</string>
+
+    <key>CFBundleExecutable</key>
+    <string>llc</string>
+
+    <key>CFBundleIdentifier</key>
+    <string>com.example.myapp</string>
+
+    <key>CFBundleVersion</key>
+    <string>1.0</string>
+
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+
+    <key>CFBundleIconFile</key>
+    <string>MyIcon</string>
+
+</dict>
+</plist>
