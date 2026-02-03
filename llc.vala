@@ -20,6 +20,7 @@ class LanternLinkCoveApp : Gtk.Application {
   private Label question_label;
   private Label section_label;
   private int questions_clicked = 0;
+  private Button? current_button = null;
 
   protected override void activate () {
 
@@ -42,6 +43,15 @@ class LanternLinkCoveApp : Gtk.Application {
     center_box.halign = Align.CENTER;
     center_box.valign = Align.CENTER;
     vbox.append (center_box);
+
+    // Allow clicking anywhere in the center area to advance
+    var click_gesture = new GestureClick ();
+    click_gesture.released.connect ((n_press, x, y) => {
+      if (current_button != null && current_button.sensitive) {
+        current_button.clicked ();
+      }
+    });
+    center_box.add_controller (click_gesture);
 
     section_label = new Label ("");
     section_label.set_name ("section");
@@ -66,6 +76,7 @@ class LanternLinkCoveApp : Gtk.Application {
     button_d.visible = false; // only for later
 
     button_a.clicked.connect (() => {
+      current_button = button_a;
 
       questions_clicked += 1;
       if (questions_clicked >= MAX_QUESTIONS) {
@@ -79,6 +90,8 @@ class LanternLinkCoveApp : Gtk.Application {
     });
 
     button_b.clicked.connect (() => {
+      current_button = button_b;
+
       if (button_a.sensitive) {
         button_a.sensitive = false;
         button_a.set_label ("[skipped]");
@@ -97,6 +110,8 @@ class LanternLinkCoveApp : Gtk.Application {
     });
 
     button_c.clicked.connect (() => {
+      current_button = button_c;
+
       if (button_a.sensitive) {
         button_a.sensitive = false;
         button_a.set_label ("[skipped]");
@@ -125,6 +140,7 @@ class LanternLinkCoveApp : Gtk.Application {
     });
 
     button_d.clicked.connect (() => {
+      current_button = button_d;
 
       questions_clicked += 1;
       if (questions_clicked >= 1) {
