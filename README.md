@@ -1,3 +1,6 @@
+> [!WARNING]
+> Migrated to https://codeberg.org/kousu/lantern-link-cove
+
 # lantern-link-cove
 
 A game of profound icebreakers.
